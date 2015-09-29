@@ -119,12 +119,50 @@ class GameScene: SKScene {
         containerNode.runAction(followBezierPath)
         
         // Create particles behind the firework that make it looks like it's lit.
-        let emitter = SKEmitterNode(fileNamed: "fuse.sks")
-        emitter!.position = CGPoint(x: 0, y: -22)
-        containerNode.addChild(emitter!)
+        let emitter = SKEmitterNode(fileNamed: "fuse.sks")!
+        emitter.position = CGPoint(x: 0, y: -22)
+        containerNode.addChild(emitter)
         
         self.fireworkNodeArray.append(containerNode)
         self.addChild(containerNode)
+    }
+    
+    func explodeFirework(firework: SKNode) {
+        let explosionEmitter = SKEmitterNode(fileNamed: "explode.sks")!
+        explosionEmitter.position = firework.position
+        self.addChild(explosionEmitter)
+        firework.removeFromParent()
+    }
+    
+    func explodeFireworks() {
+        var numberOfExplosion = 0
+        
+        for var i = self.fireworkNodeArray.count - 1; i >= 0; --i {
+            let parent = self.fireworkNodeArray[i]
+            let firework = parent.children[0] as! SKSpriteNode
+            
+            if firework.name == "selected" {
+                self.explodeFirework(parent)
+                self.fireworkNodeArray.removeAtIndex(i)
+                ++numberOfExplosion
+            }
+        }
+        
+        switch numberOfExplosion {
+        case 0:
+            // nothing
+            break
+        case 1:
+            self.score += 200
+        case 2:
+            self.score += 500
+        case 3:
+            self.score += 1500
+        case 4:
+            self.score += 2500
+        default:
+            self.score += 4000
+        }
     }
     
     func launchFireworks() {
