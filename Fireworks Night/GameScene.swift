@@ -42,14 +42,51 @@ class GameScene: SKScene {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        
+        super.touchesBegan(touches, withEvent: event)
+        self.checkForTouches(touches)
+    }
+    
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        super.touchesMoved(touches, withEvent: event)
+        self.checkForTouches(touches)
     }
    
     override func update(currentTime: CFTimeInterval) {
-        /* Called before each frame is rendered */
+        for var i = self.fireworkNodeArray.count - 1; i >= 0; --i {
+            let firework = self.fireworkNodeArray[i]
+            if firework.position.y > 900 {
+                // this uses a position high above so that fireworks can explode off screen
+                self.fireworkNodeArray.removeAtIndex(i)
+                firework.removeFromParent()
+            }
+        }
     }
     
     // MARK: - Local Methods
+    
+    func checkForTouches(touches: Set<UITouch>) {
+        guard let touchExists = touches.first else { return }
+        
+        let touchLocation = touchExists.locationInNode(self)
+        let nodes = self.nodesAtPoint(touchLocation)
+        for node in nodes {
+            if node.isKindOfClass(SKSpriteNode.self) {
+                let sprite = node as! SKSpriteNode
+                if sprite.name == "firework" {
+                    for parent in self.fireworkNodeArray {
+                        let firework = parent.children[0] as! SKSpriteNode
+                        if firework.name == "selected" && firework.color != sprite.color {
+                            firework.name = "firework"
+                            firework.colorBlendFactor = 1.0
+                        }
+                    }
+                    sprite.name = "selected"
+                    sprite.colorBlendFactor = 0.0
+                }
+            }
+        }
+        
+    }
     
     func createFirework(xMovement xMovement: CGFloat, x: Int, y: Int) {
         let containerNode = SKNode()
